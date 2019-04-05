@@ -19,6 +19,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -39,13 +42,16 @@ public class AgregarAmigoActivity extends AppCompatActivity {
     private ImageView img_amigo;
     private Button btn_take_pic;
     private File photoFile;
+    FirebaseDatabase rtdb;
+    FirebaseAuth auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agregar_amigo);
 
-
+        rtdb = FirebaseDatabase.getInstance();
+        auth = FirebaseAuth.getInstance();
         //Si no pongo esto entonces va a salir el URIFileExposedException
         //StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         //StrictMode.setVmPolicy(builder.build());
@@ -73,10 +79,16 @@ public class AgregarAmigoActivity extends AppCompatActivity {
                 //Agregar amigo a DB local
                 db.createAmigo(amigo);
 
+                String uid = auth.getCurrentUser().getUid();
+
+                rtdb.getReference().child("friend").child(uid).push().setValue(amigo);
+
                 ArrayList<Amigo> lista = db.getAllAmigos();
                 for(int i=0 ; i<lista.size() ; i++){
                     Log.e(">>>",lista.get(i).getNombre());
                 }
+
+                finish();
 
             }
         });
