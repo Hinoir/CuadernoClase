@@ -7,17 +7,27 @@ public class Amigo {
     private String edad;
     private String telefono;
     private String email;
+    private  String userID;
 
     //Serializar
     public Amigo() {
     }
 
-    public Amigo(String id, String nombre, String edad, String telefono, String email) {
+    public Amigo(String id, String nombre, String edad, String telefono, String email, String userID) {
         this.id = id;
         this.nombre = nombre;
         this.edad = edad;
         this.telefono = telefono;
         this.email = email;
+        this.userID= userID;
+    }
+
+    public String getUserID() {
+        return userID;
+    }
+
+    public void setUserID(String userID) {
+        this.userID = userID;
     }
 
     public String getId() {

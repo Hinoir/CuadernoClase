@@ -28,15 +28,18 @@ import java.util.UUID;
 
 import appmoviles.com.appsmoviles20191.db.DBHandler;
 import appmoviles.com.appsmoviles20191.model.Amigo;
+import appmoviles.com.appsmoviles20191.util.UtilDomi;
 
 public class AgregarAmigoActivity extends AppCompatActivity {
 
     private static final int CAMERA_CALLBACK_ID = 100;
+    private static final int GALLERY_CALLBACK_ID = 101;
     private EditText et_nombre;
     private EditText et_edad;
     private EditText et_correo;
     private EditText et_telefono;
     private Button btn_agregar_amigo;
+    private Button btn_open_gal;
     DBHandler db;
 
     private ImageView img_amigo;
@@ -44,6 +47,8 @@ public class AgregarAmigoActivity extends AppCompatActivity {
     private File photoFile;
     FirebaseDatabase rtdb;
     FirebaseAuth auth;
+
+    private boolean agregoDatos=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +71,7 @@ public class AgregarAmigoActivity extends AppCompatActivity {
         btn_agregar_amigo = findViewById(R.id.btn_agregar_amigo);
         img_amigo = findViewById(R.id.image_amigo);
         btn_take_pic = findViewById(R.id.btn_take_pic);
-
+        btn_open_gal = findViewById(R.id.btn_open_gal);
 
         btn_agregar_amigo.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,7 +80,8 @@ public class AgregarAmigoActivity extends AppCompatActivity {
                         et_nombre.getText().toString(),
                         et_edad.getText().toString(),
                         et_telefono.getText().toString(),
-                        et_correo.getText().toString());
+                        et_correo.getText().toString(),
+                        auth.getCurrentUser().getUid());
                 //Agregar amigo a DB local
                 db.createAmigo(amigo);
 
@@ -83,10 +89,12 @@ public class AgregarAmigoActivity extends AppCompatActivity {
 
                 rtdb.getReference().child("friend").child(uid).push().setValue(amigo);
 
-                ArrayList<Amigo> lista = db.getAllAmigos();
+                ArrayList<Amigo> lista = db.getAllAmigos(auth.getCurrentUser().getUid());
                 for(int i=0 ; i<lista.size() ; i++){
                     Log.e(">>>",lista.get(i).getNombre());
                 }
+
+                agregoDatos=true;
 
                 finish();
 
@@ -107,6 +115,17 @@ public class AgregarAmigoActivity extends AppCompatActivity {
         });
 
 
+        btn_open_gal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent();
+                i.setAction(Intent.ACTION_GET_CONTENT);
+                i.setType("image/*");
+                startActivityForResult(i,GALLERY_CALLBACK_ID);
+            }
+        });
+
+
     }
 
 
@@ -116,6 +135,12 @@ public class AgregarAmigoActivity extends AppCompatActivity {
         if(requestCode == CAMERA_CALLBACK_ID  && resultCode == RESULT_OK){
             Bitmap imagen = BitmapFactory.decodeFile(photoFile.toString());
             img_amigo.setImageBitmap(imagen);
+        }
+        if(requestCode == GALLERY_CALLBACK_ID && resultCode==RESULT_OK){
+            Uri uri = data.getData();
+            photoFile = new File(UtilDomi.getPath(this,uri));
+            Bitmap m = BitmapFactory.decodeFile(photoFile.toString());
+            img_amigo.setImageBitmap(m);
         }
     }
 
@@ -145,5 +170,19 @@ public class AgregarAmigoActivity extends AppCompatActivity {
                     .putString("correo", et_correo.getText().toString())
                     .putString("telefono", et_telefono.getText().toString())
                     .apply();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(agregoDatos==true) {
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+            sp.edit().remove("nombre")
+                    .remove("edad")
+                    .remove("correo")
+                    .remove("telefono")
+                    .apply();
+        }
+
     }
 }

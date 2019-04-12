@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -42,13 +43,13 @@ public class AdapterAmigos extends RecyclerView.Adapter<AdapterAmigos.CustomView
     }
 
     @Override
-    public void onBindViewHolder(CustomViewHolder holder, int position) {
+    public void onBindViewHolder(CustomViewHolder holder, final int position) {
         ((TextView) holder.root.findViewById(R.id.renglon_amigo_nombre)).setText(data.get(position).getNombre());
         ((TextView) holder.root.findViewById(R.id.renglon_amigo_telefono)).setText(data.get(position).getTelefono());
         holder.root.findViewById(R.id.renglon_amigo_btn_call).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                listener.onItemClick(data.get(position));
             }
         });
     }
@@ -58,5 +59,15 @@ public class AdapterAmigos extends RecyclerView.Adapter<AdapterAmigos.CustomView
         return data.size();
     }
 
+    //Observer
+    public interface onItemClickListener{
+        void onItemClick(Amigo amigo);
+    }
+
+    private onItemClickListener listener;
+
+    public void setListener(onItemClickListener listener){
+        this.listener = listener;
+    }
 
 }

@@ -15,7 +15,7 @@ public class DBHandler extends SQLiteOpenHelper {
 
 
     public static final String DB_NAME = "AppMoviles20191";
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 4;
 
     //TABLA AMIGOS
     public static final String TABLE_AMIGOS = "amigos";
@@ -24,7 +24,8 @@ public class DBHandler extends SQLiteOpenHelper {
     public static final String AMIGOS_EDAD = "edad";
     public static final String AMIGOS_CORREO = "correo";
     public static final String AMIGOS_TELEFONO = "telefono";
-    public static final String CREATE_TABLE_AMIGOS = "CREATE TABLE "+ TABLE_AMIGOS +" ("+AMIGOS_ID+" TEXT PRIMARY KEY, "+AMIGOS_NOMBRE+" TEXT, "+AMIGOS_EDAD+" TEXT, "+AMIGOS_CORREO+" TEXT, "+AMIGOS_TELEFONO+" TEXT) ";
+    public static final String AMIGOS_USERID = "userid";
+    public static final String CREATE_TABLE_AMIGOS = "CREATE TABLE "+ TABLE_AMIGOS +" ("+AMIGOS_ID+" TEXT PRIMARY KEY, "+AMIGOS_NOMBRE+" TEXT, "+AMIGOS_EDAD+" TEXT, "+AMIGOS_CORREO+" TEXT, "+AMIGOS_TELEFONO+" TEXT,"+AMIGOS_USERID+" TEXT) ";
 
     public static synchronized DBHandler getInstance(Context context){
         if(instance == null){
@@ -55,15 +56,15 @@ public class DBHandler extends SQLiteOpenHelper {
     //CREATE
     public void createAmigo(Amigo amigo){
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("INSERT INTO "+TABLE_AMIGOS+" ("+AMIGOS_ID+", "+AMIGOS_NOMBRE+", "+AMIGOS_EDAD+", "+AMIGOS_CORREO+", "+AMIGOS_TELEFONO+") VALUES ('"+amigo.getId()+"','"+amigo.getNombre()+"','"+amigo.getEdad()+"','"+amigo.getEmail()+"','"+amigo.getTelefono()+"')");
+        db.execSQL("INSERT INTO "+TABLE_AMIGOS+" ("+AMIGOS_ID+", "+AMIGOS_NOMBRE+", "+AMIGOS_EDAD+", "+AMIGOS_CORREO+", "+AMIGOS_TELEFONO+","+AMIGOS_USERID+") VALUES ('"+amigo.getId()+"','"+amigo.getNombre()+"','"+amigo.getEdad()+"','"+amigo.getEmail()+"','"+amigo.getTelefono()+"','"+amigo.getUserID()+"')");
         db.close();
     }
 
     //READ
-    public ArrayList<Amigo> getAllAmigos(){
+    public ArrayList<Amigo> getAllAmigos(String uid){
         ArrayList<Amigo> respuesta = new ArrayList<>();
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM "+TABLE_AMIGOS, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM "+TABLE_AMIGOS+" WHERE "+AMIGOS_USERID+"='"+uid+"'", null);
 
         if(cursor != null && cursor.moveToFirst()){
             do{
@@ -73,6 +74,7 @@ public class DBHandler extends SQLiteOpenHelper {
                 amigo.setEdad(  cursor.getString(  cursor.getColumnIndex(AMIGOS_EDAD)  )  );
                 amigo.setEmail(  cursor.getString(  cursor.getColumnIndex(AMIGOS_CORREO)  )  );
                 amigo.setTelefono(  cursor.getString(  cursor.getColumnIndex(AMIGOS_TELEFONO)  )  );
+                amigo.setUserID(cursor.getString(cursor.getColumnIndex(AMIGOS_USERID)));
                 respuesta.add(amigo);
 
             }while (cursor.moveToNext());
@@ -83,4 +85,11 @@ public class DBHandler extends SQLiteOpenHelper {
 
     }
 
+    public void deleteAmigosOfUser(String uid) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM "+TABLE_AMIGOS+" WHERE "+AMIGOS_USERID+"='"+uid+"'");
+        db.close();
+
+    }
 }
